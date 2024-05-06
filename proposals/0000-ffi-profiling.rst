@@ -1,18 +1,3 @@
-Notes on reStructuredText - delete this section before submitting
-==================================================================
-
-The proposals are submitted in reStructuredText format.  To get inline code, enclose text in double backticks, ``like this``.  To get block code, use a double colon and indent by at least one space
-
-::
-
- like this
- and
-
- this too
-
-To get hyperlinks, use backticks, angle brackets, and an underscore `like this <http://www.haskell.org/>`_.
-
-
 Profiling support for safe FFI imports.
 =======================================
 
@@ -33,8 +18,8 @@ for profiling instead of never accounting for time spent within them.
 
 Motivation
 ----------
-Every once in a while I hear of a GHC user running into an issue where a profiled programs
-runtime far exceeds the time indicated in the time profile.
+Sometimes when profiling a program users encounter programs for which runtime far exceeds
+the time indicated in the time profile.
 
 One possible and the most common reason for such issues is that the program spends much of
 it's time executing safe ffi calls. Sadly these do not show up in time profiles generated
