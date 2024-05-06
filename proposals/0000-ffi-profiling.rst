@@ -29,7 +29,10 @@ While this can be confusing to people unaware of how safe ffi calls interact wit
 even expert users currently have no way to check for such issues. Nor a way to profile the impact
 on performance of these ffi calls.
 
-Therefore I propose the addition of a keyword, runtime option and two flags. These will allow users:
+Therefore I propose the addition of a ways to change the profiling behaviour of ffi functions.
+Both at compile and runtime.
+
+These will allow users:
 
 * To quickly check if safe ffi calls could be to blame for the disparity.
 * To include excution time of individual safe ffi calls in runtime profiles if so desired.
@@ -95,10 +98,13 @@ spent, as they can be enabled on a per package/module basis or even for a full b
 Setting profiling behaviour of safe ffi calls globally at runtime:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A new runtime flag `-ps` will treat all safe ffi calls as profiled independent
+A new runtime flag `-ps` which will treat all safe ffi calls as profiled independent
 of how they have been compiled where possible. This is intended as an escape hatch
 that allows users to quickly check if safe ffi calls might be the culprint of a performance issue
 without changing their source or recompiling.
+
+A new runtime flag `-pu` which will treat all safe ffi calls as unprofiled independent
+of how they have been compiled where possible.
 
 Proposed Library Change Specification
 -------------------------------------
