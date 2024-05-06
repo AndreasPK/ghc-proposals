@@ -52,18 +52,17 @@ Setting profiledness when declaring an FFI import:
 When importing functions ghc will permit two new keywords: ``profiled`` and ``unprofiled``.
 These can appear after or in place of the safety specification.
 
-Precisely we extend ffi declarations from:
+Precisely we extend ffi declarations from: ::
 
-::
-  ...
-  fdecl	→	import callconv [safety] impent var :: ftype
+    ...
+    fdecl	→	import callconv [safety] impent var :: ftype
 
-to this:
+to this::
 
-  ...
-  fdecl	→	import callconv [safety] [profiling] impent var :: ftype
-  profiling → profiled
-            | unprofiled
+    ...
+    fdecl	→	import callconv [safety] [profiling] impent var :: ftype
+    profiling → profiled
+              | unprofiled
 
 Setting profiledness on a per-module basis:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,20 +76,18 @@ these flags are used. They don't affect unsafe ffi calls at all.
 That is if we imports:
 
 ::
-  -- This import will never be affected as it's an unsafe import
-  foreign import stdcall unsafe "c_unsafe"
-  c_unsafe :: CInt -> CInt -> CInt -> IO CInt
+    -- This import will never be affected as it's an unsafe import
+    foreign import stdcall unsafe "c_unsafe"
+    c_unsafe :: CInt -> CInt -> CInt -> IO CInt
 
-  -- This import will be treated as profiled under `fprofiled-safe-ffi`
-  foreign import ccall safe unprofiled "memcpy"
-    memcpy_freeze :: MutableByteArray# s -> MutableByteArray# s -> CSize
-           -> IO (Ptr a)
+    -- This import will be treated as profiled under `fprofiled-safe-ffi`
+    foreign import ccall safe unprofiled "memcpy"
+      memcpy_freeze :: MutableByteArray# s -> MutableByteArray# s -> CSize
+            -> IO (Ptr a)
 
-  -- This import will be treated as unprofiled under `funprofiled-safe-ffi`
-  foreign import ccall safe profiled "sleep"
-    c_sleep :: CUInt -> IO CUInt
-
-  addTriplet :: MutableByteArray# RealWorld -> IO Word8
+    -- This import will be treated as unprofiled under `funprofiled-safe-ffi`
+    foreign import ccall safe profiled "sleep"
+      c_sleep :: CUInt -> IO CUInt
 
 This avoids the need to annotate all ffi imports manually when trying to find out where time is
 spent as it can be enabled on a per package/module basis or even for a full build.
@@ -115,45 +112,45 @@ Examples
 --------
 
 ::
-  {-# LANGUAGE ForeignFunctionInterface #-}
+    {-# LANGUAGE ForeignFunctionInterface #-}
 
-  import Foreign.C
+    import Foreign.C
 
-  foreign import ccall safe "sleep" c_simulated_work :: Int -> IO Int
+    foreign import ccall safe "sleep" c_simulated_work :: Int -> IO Int
 
-  {-# OPAQUE ffi_call #-}
-  ffi_call x = {-# SCC c_ffi #-} c_simulated_work x -- Takes x seconds to run
+    {-# OPAQUE ffi_call #-}
+    ffi_call x = {-# SCC c_ffi #-} c_simulated_work x -- Takes x seconds to run
 
-  {-# OPAQUE some_work #-}
-  -- takes about 0.5s on my arm box
-  some_work :: Integer -> Integer
-  some_work x = {-# SCC haskell_work #-} sum [1..x :: Integer]
+    {-# OPAQUE some_work #-}
+    -- takes about 0.5s on my arm box
+    some_work :: Integer -> Integer
+    some_work x = {-# SCC haskell_work #-} sum [1..x :: Integer]
 
-  main = {-# SCC main #-} do
-      print =<< ffi_call 4
-      print $ some_work 15000000
+    main = {-# SCC main #-} do
+        print =<< ffi_call 4
+        print $ some_work 15000000
 
 In the above program we will spend 4 seconds doing "work" via an ffi call and about .5 seconds doing work
 in haskell code. Currently when trying to profile code like this we get a profile that 100% of the time was
 spent under `haskell_work` and a runtime of merely ~0.5 seconds. Despite the real runtime being over 4 seconds.
 
 ::
-  ...
-  total time  =        0.54 secs   (535 ticks @ 1000 us, 1 processor)
-  ...
+    ...
+    total time  =        0.54 secs   (535 ticks @ 1000 us, 1 processor)
+    ...
 
-  COST CENTRE  MODULE SRC               %time %alloc
+    COST CENTRE  MODULE SRC               %time %alloc
 
-  c_ffi        Main   Main.hs:8:32-49    88.3    0.0
-  haskell_work Main   Main.hs:13:40-60   11.6  100.0
+    c_ffi        Main   Main.hs:8:32-49    88.3    0.0
+    haskell_work Main   Main.hs:13:40-60   11.6  100.0
 
 But if I use my WIP branch of GHC for the same program I get something far closer to reality:
 
-::
-  COST CENTRE  MODULE SRC               %time %alloc
+test::
+    COST CENTRE  MODULE SRC               %time %alloc
 
-  c_ffi        Main   Main.hs:8:32-49    93.4    0.0
-  haskell_work Main   Main.hs:13:40-60    6.5  100.0
+    c_ffi        Main   Main.hs:8:32-49    93.4    0.0
+    haskell_work Main   Main.hs:13:40-60    6.5  100.0
 
 Effect and Interactions
 -----------------------
